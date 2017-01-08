@@ -10,7 +10,7 @@ import pymysql
 pymysql.install_as_MySQLdb() ##Install MySQL driver
 import MySQLdb as my
 
-#Create players table
+#Connect to the MySQL database
 db = my.connect(host = 'localhost', user = 'root', passwd = '', db = 'football_analytics')
 
 cursor = db.cursor()

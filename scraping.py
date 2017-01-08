@@ -80,7 +80,7 @@ def get_true_false(x):
         dummy = 0
     return(dummy)
 
-#Connect to the database
+#Connect to the MySQL database
 db_add_matches = my.connect(host = 'localhost', user = 'root', passwd = '', db = 'football_analytics')
 db = my.connect(host = 'localhost', user = 'root', passwd = '', db = 'football_analytics')
 

@@ -12,7 +12,7 @@ import MySQLdb as my
 import requests
 from bs4 import BeautifulSoup
 
-#Use MySQLdb to upload insert rows
+#Connect to the MySQL database
 db = my.connect(host = 'localhost', user = 'root', passwd = '', db = 'football_analytics')
 
 cursor = db.cursor()
