@@ -10,12 +10,12 @@ import pymysql
 pymysql.install_as_MySQLdb() #Install MySQL driver
 import MySQLdb as my
 
-#Create a MySQL database hosted locally
+#Connect to the localhost
 db = my.connect(host = 'localhost', user = 'root', passwd = '')
 
 cursor = db.cursor()
 
-#SQL query
+#Create the database
 sql = ("CREATE DATABASE football_analytics COLLATE 'utf8_general_ci'")
 
 sql_execute = cursor.execute(sql)
@@ -31,7 +31,7 @@ db = my.connect(host = 'localhost', user = 'root', passwd = '', db = 'football_a
 
 cursor = db.cursor()
 
-#SQL query to create players table
+#Create players table
 sql = ("CREATE TABLE players "
        "(player_id MEDIUMINT(8) UNSIGNED PRIMARY KEY, "
         "first_name VARCHAR(255), "
@@ -56,7 +56,7 @@ sql = ("INSERT INTO players "
 
 sql_execute = cursor.execute(sql, 0)
 
-#SQL query to create teams table
+#Create teams table
 sql = ("CREATE TABLE teams "
        "(team_id MEDIUMINT(8) UNSIGNED PRIMARY KEY, "
         "long_name VARCHAR(255), "
@@ -66,14 +66,14 @@ sql = ("CREATE TABLE teams "
 
 sql_execute = cursor.execute(sql)
 
-#SQL query to create seasons table
+#Create seasons table
 sql = ("CREATE TABLE seasons "
        "(season_id TINYINT(3) UNSIGNED PRIMARY KEY AUTO_INCREMENT, "
         "season_name VARCHAR(7))")
 
 sql_execute = cursor.execute(sql)
 
-#SQL query to insert season rows
+#Insert season rows
 sql = ("INSERT INTO seasons "
     "(season_name) "
     "VALUES (%s)")
@@ -81,7 +81,7 @@ sql = ("INSERT INTO seasons "
 sql_execute = cursor.executemany(sql, ["2009/10", "2010/11", "2011/12", "2012/13", "2013/14", \
                                        "2014/15", "2015/16", "2016/17"])
 
-#SQL query to create competitions table
+#Create competitions table
 sql = ("CREATE TABLE competitions "
        "(competition_id TINYINT(3) UNSIGNED PRIMARY KEY AUTO_INCREMENT, "
         "competition_name VARCHAR(100), "
@@ -89,7 +89,7 @@ sql = ("CREATE TABLE competitions "
 
 sql_execute = cursor.execute(sql)
 
-#SQL query to insert competition rows
+#Insert competition rows
 sql = ("INSERT INTO competitions "
     "(competition_name, competition_code) "
     "VALUES (%s, %s)")
@@ -108,7 +108,7 @@ competitions = [["English Premier League", "epl"], ["Spanish La Liga", "laliga"]
 
 sql_execute = cursor.executemany(sql, competitions)
 
-#SQL query to create matches table
+#Create matches table
 sql = ("CREATE TABLE matches "
        "(match_id INT(10) UNSIGNED PRIMARY KEY, "
         "season_id TINYINT(3) UNSIGNED, "
@@ -121,7 +121,7 @@ sql = ("CREATE TABLE matches "
 
 sql_execute = cursor.execute(sql)
 
-#SQL query to create match_teams table
+#Create match_teams table
 sql = ("CREATE TABLE match_teams "
        "(match_id INT(10) UNSIGNED, "
         "team_id MEDIUMINT(8) UNSIGNED, "
@@ -135,7 +135,7 @@ sql = ("CREATE TABLE match_teams "
 
 sql_execute = cursor.execute(sql)
 
-#SQL query to create match_players table
+#Create match_players table
 sql = ("CREATE TABLE match_players "
        "(match_id INT(10) UNSIGNED, "
         "player_id MEDIUMINT(8) UNSIGNED, "
@@ -154,7 +154,7 @@ sql = ("CREATE TABLE match_players "
 
 sql_execute = cursor.execute(sql)
 
-#SQL query to create match_team_possession table
+#Create match_team_possession table
 sql = ("CREATE TABLE match_team_possession "
        "(match_id INT(10) UNSIGNED, "
         "period TINYINT(1) UNSIGNED, "
@@ -169,7 +169,7 @@ sql = ("CREATE TABLE match_team_possession "
 
 sql_execute = cursor.execute(sql)
 
-#SQL query to create match_event_types table
+#Create match_event_types table
 sql = ("CREATE TABLE match_event_types "
        "(event_type_id SMALLINT(4) UNSIGNED PRIMARY KEY AUTO_INCREMENT, "
        "event_type_name VARCHAR(30), "
@@ -177,7 +177,7 @@ sql = ("CREATE TABLE match_event_types "
 
 sql_execute = cursor.execute(sql)
 
-#SQL query to insert certain known match_event_types - these types are referenced
+#Insert certain known match_event_types - these types are referenced
 #specifically in scraping.py
 sql = ("INSERT IGNORE INTO match_event_types "
     "(event_type_name) "
@@ -192,7 +192,7 @@ sql_execute = cursor.executemany(sql, ["pass", "cross", "corner", "goal", "save"
                                        "goalkeeper_punch", "goalkeeper_clearance", \
                                        "goalkeeper_failedcatch"])
 
-#SQL query to create match_events table
+#Create match_events table
 sql = ("CREATE TABLE match_events "
        "(match_id INT(10) UNSIGNED, "
        "match_event_id SMALLINT(5) UNSIGNED, "
