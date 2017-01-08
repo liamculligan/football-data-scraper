@@ -252,6 +252,5 @@ sql_execute = cursor.execute(sql)
 
 #Commit the query
 db.commit()
-
 #Close the connection
 db.close()
