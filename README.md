@@ -3,7 +3,7 @@
 ## Introduction
 The goal of this project is to automate the process of collecting and warehousing publicly available football data. Python's Beautiful Soup
 is used for web scraping and the resulting data is stored in a MySQL database. The original data is provided by Opta, which tracks 
-apporximately 1500 on-the-ball events in every football match that they cover. At the time of publishing this repository, Squawka's 
+approximately 1500 on-the-ball events in every football match that they cover. At the time of publishing this repository, Squawka's 
 robots.txt file placed no limitations on scraping. The scraping performed by the script is very conservative, but I would nevertheless 
 implore any potential user of the script to check the latest version of the robots.txt file before using the script.
 
