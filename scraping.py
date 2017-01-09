@@ -789,7 +789,7 @@ for (current_match_id, competition_id, season_id, competition_code) in cursor_ad
                 
                 row = [match_url_id, event["player_id"], "cross", period, str(minsec), \
                       coordinates[0], coordinates[1], coordinates_end[0], coordinates_end[1], None, None, \
-                 None, None, None, None, foul, None, None, outcome]
+                 None, None, None, None, None, None, None, outcome]
                 events.append(row) 
                 
         for time_slice in corners.find_all("time_slice"):
@@ -824,7 +824,7 @@ for (current_match_id, competition_id, season_id, competition_code) in cursor_ad
                 
                 row = [match_url_id, event["player_id"], "corner", period, str(minsec), \
                       coordinates[0], coordinates[1], coordinates_end[0], coordinates_end[1], None, None, \
-                 None, None, None, None, foul, swerve, None, outcome]
+                 None, None, None, None, None, swerve, None, outcome]
                 events.append(row)
         
         #In rare cases, offside is not provided or did not occur in a match    
@@ -879,7 +879,7 @@ for (current_match_id, competition_id, season_id, competition_code) in cursor_ad
                 
                 row = [match_url_id, event["player_id"], "take_on", period, str(minsec), \
                       coordinates[0], coordinates[1], None, None, None, None, \
-                 None, None, None, None, foul, None, None, outcome]
+                 None, None, None, None, None, None, None, outcome]
                 events.append(row)
                 
                 #In some cases the other_player tag does exist
@@ -887,7 +887,7 @@ for (current_match_id, competition_id, season_id, competition_code) in cursor_ad
                     if event["other_player"] != "":
                         row = [match_url_id, event["other_player"], "taken_on", period, str(minsec), \
                               100 - float(coordinates[0]), 100 - float(coordinates[1]), None, None, \
-                                          None, None, None, None, None, None, foul, None, None, \
+                                          None, None, None, None, None, None, None, None, None, \
                                           outcome]
                         events.append(row)
                 except:
@@ -1082,9 +1082,6 @@ for (current_match_id, competition_id, season_id, competition_code) in cursor_ad
         #Order the dataframe
         events_df = events_df.sort_values(by = ["period", "minsec", "type", "player_id"])
         
-        #Now add the row number as an id
-        events_df["match_event_id"] = range(1, len(events_df) + 1)
-        
         #Get unique event names
         event_names = events_df["type"].unique().tolist()
         
@@ -1124,17 +1121,28 @@ for (current_match_id, competition_id, season_id, competition_code) in cursor_ad
         #Remap type
         events_df = events_df.replace({"type": event_types})
         
-        #Find all rows that are identical to corners (duplicate information)
-        #Find freekicks
-        events_df = events_df[(events_df["type"].shift(1) == event_types["corner"]) & \
-         (events_df["x"].shift(1) == events_df["x"]) & (events_df["y"].shift(1) == events_df["y"]) & \
-          (events_df["end_x"].shift(1) == events_df["end_x"]) & \
-           (events_df["end_y"].shift(1) == events_df["end_y"]) == False]
+        #Find all other events that are also recorded as corners (duplicate information)
+        #Can be either a pass or a cross - need to remove both of these
+        for shift_value in [-1, -1, 1, 1]:
+          
+            events_df = events_df[(events_df["type"].shift(shift_value) == event_types["corner"]) & \
+             (events_df["x"].shift(shift_value) == events_df["x"]) & \
+             (events_df["y"].shift(shift_value) == events_df["y"]) & \
+             (events_df["player_id"].shift(shift_value) == events_df["player_id"]) & \
+             (events_df["minsec"].shift(shift_value) == events_df["minsec"]) == False]
             
-        events_df = events_df[(events_df["type"].shift(-1) == event_types["corner"]) & \
-         (events_df["x"].shift(-1) == events_df["x"]) & (events_df["y"].shift(-1) == events_df["y"]) & \
-          (events_df["end_x"].shift(-1) == events_df["end_x"]) & \
-           (events_df["end_y"].shift(-1) == events_df["end_y"]) == False]
+        #Remove passes that are also recorded as crosses
+        for shift_value in [-1, 1]:
+            
+            events_df = events_df[(events_df["type"] == event_types["pass"]) & \
+                                  (events_df["type"].shift(shift_value) == event_types["cross"]) & \
+             (events_df["x"].shift(shift_value) == events_df["x"]) & \
+             (events_df["y"].shift(shift_value) == events_df["y"]) & \
+             (events_df["player_id"].shift(shift_value) == events_df["player_id"]) & \
+             (events_df["minsec"].shift(shift_value) == events_df["minsec"]) == False]
+        
+        #Now add the row number as an id
+        events_df["match_event_id"] = range(1, len(events_df) + 1)
         
         #Determine whether an event started and/or ended in the attacking or defensive box
         events_df["attacking_box"] = np.where((events_df["x"] >= 82) & \
