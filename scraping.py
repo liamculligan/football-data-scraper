@@ -455,10 +455,7 @@ for (current_match_id, competition_id, season_id, competition_code) in cursor_ad
         
         #Extract the required takeons events
         takeons = soup.filters.takeons
-        
-        #Extract the required fouls events
-        fouls = soup.filters.fouls
-        
+            
         #Extract the required cards events
         cards = soup.filters.cards
         
@@ -896,37 +893,7 @@ for (current_match_id, competition_id, season_id, competition_code) in cursor_ad
                 except:
                     #If other_player doesn't exist - don't add this row
                     pass
-        
-        for time_slice in fouls.find_all("time_slice"):
-            period = get_period(time_slice["name"])
-            for event in time_slice.find_all("event"):
-                
-                #Sometimes minsec is available, otherwise mins and secs may be avaialble
-                #Very rarely, no time info is provided for some matches
-                try:
-                    minsec = event["minsec"]
-                except:
-                    try:
-                        minsec = int(event["mins"]) * 60 + int(event["secs"])
-                    except:
-                        try:
-                            minsec = int(event["mins"]) * 60
-                        except:
-                            minsec = None
-                
-                coordinates = re.split(",", event.loc.text)
-             
-                row = [match_url_id, event["player_id"], "foul", period, str(minsec), \
-                      coordinates[0], coordinates[1], None, None, None, None, \
-                 None, None, None, None, None, None, None, None]
-                events.append(row)
-                
-                if event.otherplayer.text != "0":
-                    row = [match_url_id, event.otherplayer.text, "fouled", period, str(minsec), \
-                          coordinates[0], coordinates[1], None, None, None, None, \
-                     None, None, None, None, None, None, None, None]
-                    events.append(row)
-        
+               
         for time_slice in cards.find_all("time_slice"):
             period = get_period(time_slice["name"])
             for event in time_slice.find_all("event"):
@@ -1049,11 +1016,19 @@ for (current_match_id, competition_id, season_id, competition_code) in cursor_ad
                                 minsec = None
                     
                     ot_id = event["ot_id"]
-                    if (ot_id == "1") | (ot_id == "2") | (ot_id == "10") | (ot_id == "11") | (ot_id == "61"):
+                    ot_outcome = event["ot_outcome"]
+                    if (ot_id == "1") | (ot_id == "2") | (ot_id == "4") | (ot_id == "10") | \
+                        (ot_id == "11") | (ot_id == "61"):
                         if ot_id == "1":
                             type = "pass"
                         elif ot_id == "2":
                             type = "offside_pass"
+                        elif ot_id == "4":
+                            if ot_outcome == "0":
+                                type = "foul"
+                            else:
+                                type = "fouled"
+                            ot_outcome = None
                         elif ot_id == "10":
                             type = "blocked_shot"
                         elif ot_id == "11":
@@ -1065,7 +1040,7 @@ for (current_match_id, competition_id, season_id, competition_code) in cursor_ad
                             
                         row = [match_url_id, event["player_id"], type, period, str(minsec), \
                               coordinates[0], coordinates[1], None, None, None, None, \
-                         None, None, None, None, None, None, None, event["ot_outcome"]]
+                         None, None, None, None, None, None, None, ot_outcome]
                         events.append(row)
         except:
             #If ot_id does not exist, do not add this match to the database
@@ -1163,25 +1138,25 @@ for (current_match_id, competition_id, season_id, competition_code) in cursor_ad
         
         #Determine whether an event started and/or ended in the attacking or defensive box
         events_df["attacking_box"] = np.where((events_df["x"] >= 82) & \
-            ((events_df["y"] >= 32) & (events_df["y"] <= 68)), 1, 0)
+            ((events_df["y"] >= 28) & (events_df["y"] <= 72)), 1, 0)
         
         events_df["attacking_box"] = np.where((pd.isnull(events_df["x"])) | \
             (pd.isnull(events_df["y"])), None, events_df["attacking_box"])
         
         events_df["defensive_box"] = np.where((events_df["x"] <= 18) & \
-            ((events_df["y"] >= 32) & (events_df["y"] <= 68)), 1, 0)
+            ((events_df["y"] >= 28) & (events_df["y"] <= 72)), 1, 0)
         
         events_df["defensive_box"] = np.where((pd.isnull(events_df["x"])) | \
             (pd.isnull(events_df["y"])), None, events_df["defensive_box"])
         
         events_df["end_attacking_box"] = np.where((events_df["end_x"] >= 82) & \
-            ((events_df["end_y"] >= 32) & (events_df["end_y"] <= 68)), 1, 0)
+            ((events_df["end_y"] >= 28) & (events_df["end_y"] <= 72)), 1, 0)
         
         events_df["end_attacking_box"] = np.where((pd.isnull(events_df["end_x"])) | \
             (pd.isnull(events_df["end_y"])), None, events_df["end_attacking_box"])
         
         events_df["end_defensive_box"] = np.where((events_df["end_x"] <= 18) & \
-            ((events_df["end_y"] >= 32) & (events_df["end_y"] <= 68)), 1, 0)
+            ((events_df["end_y"] >= 28) & (events_df["end_y"] <= 72)), 1, 0)
         
         events_df["end_defensive_box"] = np.where((pd.isnull(events_df["end_x"])) | \
             (pd.isnull(events_df["end_y"])), None, events_df["end_defensive_box"])

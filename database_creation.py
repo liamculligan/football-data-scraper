@@ -22,10 +22,8 @@ sql_execute = cursor.execute(sql)
 
 #Commit the query
 db.commit()
-
 #Close the connection
 db.close()
-
 #Connect to the newly-created database
 db = my.connect(host = 'localhost', user = 'root', passwd = '', db = 'football_analytics')
 
